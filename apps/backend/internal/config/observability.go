@@ -77,7 +77,7 @@ func (c *ObservabilityConfig) Validate() error {
 	return nil
 }
 
-func GetLoggingLevel(c *ObservabilityConfig) string {
+func (c *ObservabilityConfig) GetLoggingLevel() string {
 	switch c.Environment {
 	case "production":
 		if c.Logging.Level == "" {
