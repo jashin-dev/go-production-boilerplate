@@ -48,13 +48,13 @@ type AuthConfig struct {
 }
 
 type Config struct {
-	Primary     Primary           `koanf:"primary" validate:"required"`
-	Server      ServerConfig      `koanf:"server" validate:"required"`
-	Database    DatabaseConfig    `koanf:"database" validate:"required"`
-	Auth        AuthConfig        `koanf:"auth" validate:"required"`
-	Redis       RedisConfig       `koanf:"redis" validate:"required"`
-	Integration IntegrationConfig `koanf:"integration" validate:"required"`
-	//Observability *ObservabilityConfig `koanf:"observability"`
+	Primary       Primary              `koanf:"primary" validate:"required"`
+	Server        ServerConfig         `koanf:"server" validate:"required"`
+	Database      DatabaseConfig       `koanf:"database" validate:"required"`
+	Auth          AuthConfig           `koanf:"auth" validate:"required"`
+	Redis         RedisConfig          `koanf:"redis" validate:"required"`
+	Integration   IntegrationConfig    `koanf:"integration" validate:"required"`
+	Observability *ObservabilityConfig `koanf:"observability"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -83,19 +83,17 @@ func LoadConfig() (*Config, error) {
 		logger.Fatal().Err(err).Msg("config validation failed")
 	}
 
-	// // Set default observability config if not provided
-	// if mainConfig.Observability == nil {
-	// 	mainConfig.Observability = DefaultObservabilityConfig()
-	// }
+	if mainConfig.Observability == nil {
+		mainConfig.Observability = DefaultObservabilityConfig()
+	}
 
-	// // Override service name and environment from primary config
-	// mainConfig.Observability.ServiceName = "boilerplate"
-	// mainConfig.Observability.Environment = mainConfig.Primary.Env
+	// Override service name and environment from primary config
+	mainConfig.Observability.Environment = mainConfig.Primary.Env
 
-	// // Validate observability config
-	// if err := mainConfig.Observability.Validate(); err != nil {
-	// 	logger.Fatal().Err(err).Msg("invalid observability config")
-	// }
+	// Validate observability config
+	if err := mainConfig.Observability.Validate(); err != nil {
+		logger.Fatal().Err(err).Msg("invalid observability config")
+	}
 
 	return mainConfig, nil
 
