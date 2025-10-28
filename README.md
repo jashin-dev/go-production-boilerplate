@@ -19,7 +19,7 @@ A production-ready monorepo template for building scalable web applications with
 
 ```
 go-boilerplate/
-├── apps/backend/          # Go backend application
+├── apps/backend/     # Go backend application
 ├── packages/         # Frontend packages (React, Vue, etc.)
 ├── package.json      # Monorepo configuration
 ├── turbo.json        # Turborepo configuration
