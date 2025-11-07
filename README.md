@@ -40,7 +40,7 @@ go-boilerplate/
 1. Clone the repository:
 ```bash
 git clone https://github.com/jashin-dev/go-production-boilerplate.git
-cd go-boilerplate
+cd go-production-boilerplate
 ```
 
 2. Install dependencies:
