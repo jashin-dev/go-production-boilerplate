@@ -7,6 +7,8 @@ require (
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/knadh/koanf/providers/env v1.1.0
 	github.com/knadh/koanf/v2 v2.3.0
+	github.com/newrelic/go-agent/v3 v3.41.0
+	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.2
 	github.com/rs/zerolog v1.34.0
 )
 
@@ -24,8 +26,13 @@ require (
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	golang.org/x/crypto v0.42.0 // indirect
+	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
+	google.golang.org/grpc v1.65.0 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 )
