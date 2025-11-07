@@ -1,97 +1,170 @@
 package logger
 
-// import (
-// 	"io"
-// 	"os"
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"time"
 
-// 	"github.com/jashin-dev/go-production-boilerplate/internal/config"
-// 	zerologWriter "github.com/newrelic/go-agent/v3/integrations/logcontext-v2/zerolog!writer"
-// 	"github.com/newrelic/go-agent/v3/newrelic"
-// 	"github.com/rs/zerolog"
-// 	"github.com/rs/zerolog/pkgerrors"
-// )
+	"github.com/jashin-dev/go-production-boilerplate/internal/config"
+	zerologWriter "github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter"
+	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/pkgerrors"
+)
 
-// type loggerService struct {
-// 	nrApp *newrelic.Application
-// }
+type LoggerService struct {
+	nrApp *newrelic.Application
+}
 
-// func NewLoggerService(cfg *config.ObservabilityConfig) *loggerService {
-// 	service := &loggerService{}
+func NewLoggerService(cfg *config.ObservabilityConfig) *LoggerService {
+	service := &LoggerService{}
 
-// 	if cfg.NewRelic.LicenseKey == "" {
-// 		return service
-// 	}
+	if cfg.NewRelic.LicenseKey == "" {
+		return service
+	}
 
-// 	var configOptions []newrelic.ConfigOption
-// 	configOptions = append(configOptions,
-// 		newrelic.ConfigAppName(cfg.ServiceName),
-// 		newrelic.ConfigLicense(cfg.NewRelic.LicenseKey),
-// 		newrelic.ConfigAppLogForwardingEnabled(cfg.NewRelic.AppLogForwardingEnabled),
-// 		newrelic.ConfigDistributedTracerEnabled(cfg.NewRelic.DistributedTracingEnabled),
-// 	)
+	var configOptions []newrelic.ConfigOption
+	configOptions = append(configOptions,
+		newrelic.ConfigAppName(cfg.ServiceName),
+		newrelic.ConfigLicense(cfg.NewRelic.LicenseKey),
+		newrelic.ConfigAppLogForwardingEnabled(cfg.NewRelic.AppLogForwardingEnabled),
+		newrelic.ConfigDistributedTracerEnabled(cfg.NewRelic.DistributedTracingEnabled),
+	)
 
-// 	if cfg.NewRelic.DebugLogging {
-// 		configOptions = append(configOptions, newrelic.ConfigDebugLogger(os.Stdout))
-// 	}
+	if cfg.NewRelic.DebugLogging {
+		configOptions = append(configOptions, newrelic.ConfigDebugLogger(os.Stdout))
+	}
 
-// 	app, err := newrelic.NewApplication(configOptions...)
-// 	if err != nil {
-// 		return service
-// 	}
+	app, err := newrelic.NewApplication(configOptions...)
+	if err != nil {
+		return service
+	}
 
-// 	service.nrApp = app
-// 	return service
-// }
+	service.nrApp = app
+	return service
+}
 
-// func NewLoggerWithService(cfg *config.ObservabilityConfig, loggerService *loggerService) {
-// 	var logLevel zerolog.Level
-// 	level := cfg.GetLoggingLevel()
+func NewLoggerWithService(cfg *config.ObservabilityConfig, loggerService *LoggerService) zerolog.Logger {
+	var logLevel zerolog.Level
+	level := cfg.GetLoggingLevel()
 
-// 	switch level {
-// 	case "debug":
-// 		logLevel = zerolog.DebugLevel
-// 	case "info":
-// 		logLevel = zerolog.InfoLevel
-// 	case "warn":
-// 		logLevel = zerolog.WarnLevel
-// 	case "error":
-// 		logLevel = zerolog.ErrorLevel
-// 	default:
-// 		logLevel = zerolog.InfoLevel
-// 	}
+	switch level {
+	case "debug":
+		logLevel = zerolog.DebugLevel
+	case "info":
+		logLevel = zerolog.InfoLevel
+	case "warn":
+		logLevel = zerolog.WarnLevel
+	case "error":
+		logLevel = zerolog.ErrorLevel
+	default:
+		logLevel = zerolog.InfoLevel
+	}
 
-// 	zerolog.TimeFieldFormat = "2006-01-02 15:04:05"
-// 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+	zerolog.TimeFieldFormat = "2006-01-02 15:04:05"
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 
-// 	var writer io.Writer
-// 	var baseWriter io.Writer
+	var writer io.Writer
+	var baseWriter io.Writer
 
-// 	if cfg.IsProduction() && cfg.Logging.Format == "json" {
-// 		baseWriter = os.Stdout
+	if cfg.IsProduction() && cfg.Logging.Format == "json" {
+		baseWriter = os.Stdout
 
-// 		if loggerService != nil && loggerService.nrApp != nil {
-// 			nrWriter := zerologWriter.New(baseWriter, loggerService.nrApp)
-// 			writer := nrWriter
-// 		} else {
-// 			writer := baseWriter
-// 		}
-// 	} else {
-// 		consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout, TimeFieldFormat: "2006-01-02 15:04:05"}
-// 		writer := consoleWriter
-// 	}
+		if loggerService != nil && loggerService.nrApp != nil {
+			nrWriter := zerologWriter.New(baseWriter, loggerService.nrApp)
+			writer = nrWriter
+		} else {
+			writer = baseWriter
+		}
+	} else {
+		consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: "2006-01-02 15:04:05"}
+		writer = consoleWriter
+	}
 
-// 	logger := zerolog.New(writer).
-// 		Level(logLevel).
-// 		With().
-// 		Timestamp().
-// 		Str("service", cfg.ServiceName).
-// 		Str("environment", cfg.Environment).
-// 		Logger()
+	logger := zerolog.New(writer).
+		Level(logLevel).
+		With().
+		Timestamp().
+		Str("service", cfg.ServiceName).
+		Str("environment", cfg.Environment).
+		Logger()
 
-// 	if !cfg.IsProduction() {
-// 		logger = logger.With().Stack().Logger()
-// 	}
+	if !cfg.IsProduction() {
+		logger = logger.With().Stack().Logger()
+	}
 
-// 	return logger
+	return logger
 
-// }
+}
+
+func NewPgxLogger(level zerolog.Level) zerolog.Logger {
+	writer := zerolog.ConsoleWriter{
+		Out:        os.Stdout,
+		TimeFormat: "2006-01-02 15:04:05",
+		FormatFieldValue: func(i any) string {
+			switch v := i.(type) {
+			case string:
+				if len(v) > 200 {
+					return v[:200] + "..."
+				}
+				return v
+			case []byte:
+				var obj any
+				if err := json.Unmarshal(v, &obj); err == nil {
+					pretty, _ := json.MarshalIndent(obj, "", "    ")
+					return "\n" + string(pretty)
+				}
+				return string(v)
+			default:
+				return fmt.Sprintf("%v", v)
+			}
+		},
+	}
+
+	return zerolog.New(writer).
+		Level(level).
+		With().
+		Timestamp().
+		Str("component", "database").
+		Logger()
+}
+
+func WithTraceContext(logger zerolog.Logger, txn *newrelic.Transaction) zerolog.Logger {
+	if txn == nil {
+		return logger
+	}
+
+	metadata := txn.GetTraceMetadata()
+
+	return logger.With().
+		Str("trace_id", metadata.TraceID).
+		Str("span_id", metadata.SpanID).
+		Logger()
+}
+
+func GetPgxTraceLogLevel(level zerolog.Level) int {
+	switch level {
+	case zerolog.DebugLevel:
+		return 6
+	case zerolog.InfoLevel:
+		return 4
+	case zerolog.WarnLevel:
+		return 3
+	case zerolog.ErrorLevel:
+		return 2
+	default:
+		return 0
+	}
+}
+
+func (ls *LoggerService) Shutdown() {
+	if ls.nrApp != nil {
+		ls.nrApp.Shutdown(10 * time.Second)
+	}
+}
+
+func (ls *LoggerService) GetApplication() *newrelic.Application {
+	return ls.nrApp
+}
