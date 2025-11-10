@@ -4,11 +4,13 @@ go 1.25.1
 
 require (
 	github.com/go-playground/validator/v10 v10.28.0
+	github.com/jackc/pgx-zerolog v0.0.0-20230315001418-f978528409eb
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/knadh/koanf/providers/env v1.1.0
 	github.com/knadh/koanf/v2 v2.3.0
 	github.com/newrelic/go-agent/v3 v3.41.0
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.2
+	github.com/newrelic/go-agent/v3/integrations/nrpgx5 v1.3.2
 	github.com/rs/zerolog v1.34.0
 )
 
